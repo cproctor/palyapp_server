@@ -44,3 +44,14 @@ class StoryImage(models.Model):
     caption = models.TextField(blank=True)
     sequence = models.IntegerField()
     # Add a resized version
+
+class Comment(models.Model):
+    author = models.ForeignKey('auth.User', related_name="comments")
+    story = models.ForeignKey(Story, related_name="comments")
+    text = models.TextField()
+    anonymous = models.BooleanField(default=False)
+
+
+
+
+
