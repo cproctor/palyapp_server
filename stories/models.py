@@ -61,13 +61,15 @@ class Comment(models.Model):
     author = models.ForeignKey('auth.User', related_name="comments")
     story = models.ForeignKey(Story, related_name="comments")
     text = models.TextField()
+    pub_date = models.DateTimeField()
     anonymous = models.BooleanField(default=False)
 
     def __str__(self):
-        return '"{}" (user {} on story {}{})'.format(
+        return '"{}" (user {} on story {} at {}{})'.format(
             self.text,
             self.author.id,
             self.story.id,
+            self.pub_date.strftime("%m/%d/%y"),
             "; anonymous" if self.anonymous else ""
         )
 

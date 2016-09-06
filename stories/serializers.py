@@ -28,7 +28,7 @@ class CommentSerializer(serializers.ModelSerializer):
     "A full-power serializer for comments."
     class Meta:
         model = Comment
-        fields = ('id', 'author', 'story', 'text', 'anonymous')
+        fields = ('id', 'author', 'story', 'text', 'pub_date', 'anonymous')
 
 class AuthorDetailCommentSerializer(CommentSerializer):
     "A serializer which offers details of authorship, but which is therefore read-only for author"
@@ -36,11 +36,10 @@ class AuthorDetailCommentSerializer(CommentSerializer):
 
 class MaskedCommentSerializer(serializers.ModelSerializer):
     "A read-only serializer for comments which hides the authors of anonymous comments"
-
     author = CommentAuthorSerializer(read_only=True, source='masked_author')
 
     class Meta:
         model = Comment
-        fields = ('id', 'author', 'story', 'text', 'anonymous')
-        read_only_fields = ('id', 'author', 'story', 'text', 'anonymous')
+        fields = ('id', 'author', 'story', 'text', 'pub_date', 'anonymous')
+        read_only_fields = ('id', 'author', 'story', 'text', 'pub_date', 'anonymous')
 
