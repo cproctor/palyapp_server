@@ -15,13 +15,21 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from rest_framework import routers
+from rest_framework_extensions import routers
 from stories import views
 from profiles.views import Signup
 
-router = routers.DefaultRouter()
+router = routers.ExtendedDefaultRouter()
 router.register('publications', views.PublicationViewSet)
-router.register('stories', views.StoryViewSet)
+storyRoutes = router.register('stories', views.StoryViewSet)
+storyRoutes.register(
+    'comments', 
+    views.CommentViewSet, 
+    base_name="story-comments", 
+    parents_query_lookups=['story']
+)
+router.register('categories', views.CategoryViewSet)
+router.register('comments', views.CommentViewSet)
 
 urlpatterns = [
     url(r'^', include(router.urls)),
