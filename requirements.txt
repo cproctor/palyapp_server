@@ -1,0 +1,9 @@
+beautifulsoup4==4.5.1
+boto==2.42.0
+Django==1.10
+django-storages==1.5.0
+djangorestframework==3.4.6
+-e git://github.com/chibisov/drf-extensions.git@0306a3ab934e6c5f31603e7f452742ac9a5c7c28#egg=drf_extensions
+feedparser==5.2.1
+Pillow==3.3.1
+pytz==2016.6.1

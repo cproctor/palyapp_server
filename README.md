@@ -15,6 +15,7 @@ feedback, and discussion. We will do this by:
 
 - django (web framework)
 - djangorestframework (extends django to provide REST functionality)
+- drf-extensions (allows routing nested requests, such as a story's comments)
 - beautifulsoup4 (parse html)
 - feedparser (parse rss feeds)
 - boto (interface with Amazon s3 to store images)
@@ -33,3 +34,29 @@ feedback, and discussion. We will do this by:
 
 - Sync management task can pull updates from all publication feeds. 
 - Stories, publications, comments, and categories available via REST interface.
+
+
+What's next? I need a way for new users to register, and I need to create comments tagged to users. 
+- Restrict Stories and Publications to readonly. 
+- Restrict comment reads to authenticated users. 
+- Restrict comment edits to comment owner.
+
+- Tagging policy?
+
+- Add profile objects 
+    - student id
+
+
+I need to get a little fancy with the comments:
+    - When comments are created, the author should be taken from the Request.
+        - This seems like I will need some customization in the ViewSet. It needs an appropriate 
+          permission, and the create action needs to be overwitten to take the value from request.
+    - When a serialized representation is made for a comment, it should only contain an author
+      if the comment was made non-anonymous. 
+
+    - Add routes for users' comments and for storys' comments
+
+
+What exactly do I want from the comments?
+    When creating a comment, just work.
+
