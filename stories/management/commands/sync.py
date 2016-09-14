@@ -41,8 +41,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for pub in Publication.objects.filter(active=True).all():
             feed = parse(pub.feed_url)
-            lastUpdate = to_local_datetime(feed.updated_parsed)
-            if options['force'] or lastUpdate > pub.last_update:
+            try:
+                lastUpdate = to_local_datetime(feed.updated_parsed)
+            except AttributeError:
+                lastUpdate = None
+            if options['force'] or lastUpdate is None or lastUpdate > pub.last_update:
                 for page in range(1, PAGES_TO_SCAN + 1):
                     self.stdout.write(self.style.SUCCESS("- Syncing {}, Page {}".format(pub.name, page)))
                     feed = parse("{}?paged={}".format(pub.feed_url, page))
