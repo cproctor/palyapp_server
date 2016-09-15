@@ -36,8 +36,14 @@ def get_content(entry):
     else:
         return ""
 
+def clean_url(url):
+    if url.startswith("//"):
+        return "http:" + url
+    else:
+        return url
+
 def get_story_url(entry):
-    return entry.link
+    return clean_url(entry.link)
 
 def get_primary_image_url(entry):
     response = requests.get(get_story_url(entry))
@@ -55,7 +61,7 @@ def get_primary_image_url(entry):
         if container:
             img = container.find('img')
             if img:
-                return img['src']
+                return clean_url(img['src'])
 
 def get_primary_image(entry):
     "Download the primary image and return it as a temporary file"
