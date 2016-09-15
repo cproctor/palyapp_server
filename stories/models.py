@@ -43,6 +43,7 @@ class Story(models.Model):
     categories = models.ManyToManyField(Category, related_name='stories')
     content = models.TextField() # Raw HTML
     text = models.TextField()
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return "{} ({}; {}; {})".format(self.title, self.authors, self.publisher, self.pub_date.strftime("%m/%d/%y"))

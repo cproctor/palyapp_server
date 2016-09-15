@@ -15,7 +15,7 @@ class PublicationViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
 class StoryViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     "API endpoint allowing REST services for stories."
-    queryset = Story.objects.all()
+    queryset = Story.objects.filter(active=True)
     serializer_class = StorySerializer
     permission_classes = (IsAdminOrReadOnly,)
 
