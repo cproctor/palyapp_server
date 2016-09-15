@@ -27,6 +27,12 @@ def get_categories(entry):
     else:
         return []
 
+def get_content(entry):
+    if hasattr(entry, 'content'):
+        return entry.content[0]['value']
+    else:
+        return ""
+
 def to_local_datetime(time_struct):
     "Converts a time struct to a datetime (via a timestamp), and then localizes to UTC"
     return pytz.UTC.localize(datetime.fromtimestamp(mktime(time_struct)))
@@ -70,7 +76,7 @@ class Command(BaseCommand):
                                 pub_date = pubDate,
                                 pub_id = pubId,
                                 authors = entry.author,
-                                content = entry.content[0]['value']
+                                content = get_content(entry)
                             )
                             story.text = BeautifulSoup(story.content, 'html.parser').get_text()
                             story.save()
