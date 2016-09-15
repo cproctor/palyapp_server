@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework', 
+    'versatileimagefield',
     'stories',
     'profiles'
 ]
@@ -133,4 +134,15 @@ AWS_STORAGE_BUCKET_NAME = 'palyapp'
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
     'PAGE_SIZE': 10
+}
+
+VERSATILEIMAGEFIELD_SETTINGS = {
+    'create_images_on_demand': False
+}
+
+VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
+    'story_image': [
+        ('full', 'crop__640x480'),
+        ('thumb', 'crop__40x40')
+    ]
 }

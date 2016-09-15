@@ -3,4 +3,5 @@
 *.swo
 *.sqlite3
 settings.py
+images/*
 

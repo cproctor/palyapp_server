@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.core import files
 from feedparser import parse
 from stories.models import Publication, Story, Category
 from time import mktime
@@ -6,6 +7,8 @@ from datetime import datetime
 import re
 import pytz
 from bs4 import BeautifulSoup
+import requests
+import tempfile
 
 # Should work for Wordpress feeds, which are all we need.
 # Not robust for others.
@@ -32,6 +35,42 @@ def get_content(entry):
         return entry.content[0]['value']
     else:
         return ""
+
+def get_story_url(entry):
+    return entry.link
+
+def get_primary_image_url(entry):
+    response = requests.get(get_story_url(entry))
+    if response.status_code != requests.codes.ok:
+        return None
+    soup = BeautifulSoup(response.content, 'html.parser')
+    imageIdentifiers = [
+        {'id': 'cb-standard-featured'}, # Campanile
+        {'id': 'cb-featured-image'}, # Verde
+        {'class_': 'permalinkphotobox'}, # Viking
+        {'class_': 'story-content'} # Voice
+    ]
+    for identifier in imageIdentifiers:
+        container = soup.find(**identifier)
+        if container:
+            img = container.find('img')
+            if img:
+                return img['src']
+
+def get_primary_image(entry):
+    "Download the primary image and return it as a temporary file"
+    url = get_primary_image_url(entry)
+    if url is None:
+        return None
+    response = requests.get(url, stream=True)
+    if response.status_code != requests.codes.ok:
+        return None
+    f = tempfile.NamedTemporaryFile()
+    for block in response.iter_content(1024 * 8):
+        if not block:
+            break
+        f.write(block)
+    return files.File(f)
 
 def to_local_datetime(time_struct):
     "Converts a time struct to a datetime (via a timestamp), and then localizes to UTC"
@@ -66,6 +105,7 @@ class Command(BaseCommand):
                                 story.authors = entry.author
                                 story.content = entry.content[0]['value']
                                 story.text = BeautifulSoup(story.content, 'html.parser').get_text()
+                                story.image = get_primary_image(entry)
                                 story.save()
                                 story.categories.add(*get_categories(entry))
                                 self.stdout.write(self.style.SUCCESS('  - Updated {}'.format(story.title)))
@@ -76,7 +116,8 @@ class Command(BaseCommand):
                                 pub_date = pubDate,
                                 pub_id = pubId,
                                 authors = entry.author,
-                                content = get_content(entry)
+                                content = get_content(entry),
+                                image = get_primary_image(entry)
                             )
                             story.text = BeautifulSoup(story.content, 'html.parser').get_text()
                             story.save()

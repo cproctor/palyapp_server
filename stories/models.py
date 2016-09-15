@@ -1,6 +1,10 @@
 from django.db import models
+from django.dispatch import receiver
 from django.utils.timezone import now
 from datetime import datetime
+from versatileimagefield.fields import VersatileImageField
+from versatileimagefield.placeholder import OnStoragePlaceholderImage
+from versatileimagefield.image_warmer import VersatileImageFieldWarmer
 import os
 
 def s3_image_upload(instance, filename):
@@ -35,15 +39,21 @@ class Category(models.Model):
     
 class Story(models.Model):
     "Represents a story published by a publication"
-    title = models.CharField(max_length=200)
+    title = models.CharField('Title', max_length=200)
     publisher = models.ForeignKey(Publication, related_name='stories')
-    pub_date = models.DateTimeField()
-    pub_id = models.IntegerField()
-    authors = models.TextField() # To keep things simple, we will not have an authors object.
+    pub_date = models.DateTimeField('Date published')
+    pub_id = models.IntegerField('Publication ID')
+    authors = models.TextField('Authors') # To keep things simple, we will not have an authors object.
     categories = models.ManyToManyField(Category, related_name='stories')
-    content = models.TextField() # Raw HTML
-    text = models.TextField()
-    active = models.BooleanField(default=True)
+    content = models.TextField('Raw Content') # Raw HTML
+    text = models.TextField('Text Content')
+    active = models.BooleanField('Active', default=True)
+    image = VersatileImageField('Image', 
+        upload_to=s3_image_upload, blank=True,
+        placeholder_image=OnStoragePlaceholderImage(
+            path='images/paly.jpg'
+        )
+    )
 
     def __str__(self):
         return "{} ({}; {}; {})".format(self.title, self.authors, self.publisher, self.pub_date.strftime("%m/%d/%y"))
@@ -51,6 +61,17 @@ class Story(models.Model):
     class Meta:
         ordering = ('publisher', 'pub_date')
 
+@receiver(models.signals.post_save, sender=Story)
+def warm_story_images_images(sender, instance, **kwargs):
+    """Ensures story images are created post-save"""
+    story_img_warmer = VersatileImageFieldWarmer(
+        instance_or_queryset=instance,
+        rendition_key_set='story_image',
+        image_attr='image'
+    )
+    num_created, failed_to_create = story_img_warmer.warm()
+
+# For simplicity, not used. Each story gets 0 or 1 image.
 class StoryImage(models.Model):
     story = models.ForeignKey(Story)
     image = models.ImageField(upload_to=s3_image_upload)
