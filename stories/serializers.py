@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class PublicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Publication
-        fields = ('name', 'url', 'feed_url', 'logo', 'stories')
+        fields = ('id', 'name', 'url', 'feed_url', 'logo', 'stories')
         read_only_fields = ('stories',)
 
 class StorySerializer(serializers.ModelSerializer):
