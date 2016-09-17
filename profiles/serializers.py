@@ -38,3 +38,8 @@ class UserSerializer(serializers.Serializer):
         )
         profile.save()
         return user
+
+class ProfileAnalyticsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ('student_id', 'analytics_opt_out')
