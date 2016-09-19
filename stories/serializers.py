@@ -21,7 +21,8 @@ class StorySerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('id', 'name', 'stories')
+        fields = ('id', 'name', 'stories', 'story_count')
+        read_only_fields = ('story_count',)
         #depth = 1
 
 class CommentAuthorSerializer(serializers.ModelSerializer):
