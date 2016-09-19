@@ -53,7 +53,7 @@ def get_primary_image_url(entry):
     if response.status_code != requests.codes.ok:
         raise NoPrimaryImageFoundError("Response status code was {}.".format(response.status_code))
     soup = BeautifulSoup(response.content, 'html.parser')
-    conatinerIdentifiers = [
+    containerIdentifiers = [
         {'id': 'cb-standard-featured'}, # Campanile
         {'id': 'cb-featured-image'}, # Verde
         {'class_': 'permalinkphotobox'}, # Viking
