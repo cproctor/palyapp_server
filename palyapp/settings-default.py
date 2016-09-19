@@ -143,6 +143,6 @@ VERSATILEIMAGEFIELD_SETTINGS = {
 VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
     'story_image': [
         ('full', 'crop__640x480'),
-        ('thumb', 'crop__40x40')
+        ('thumb', 'crop__80x80')
     ]
 }
