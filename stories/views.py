@@ -20,7 +20,7 @@ class StoryViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
 
 class CategoryViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.filter(story_count__gte=3)
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
 
