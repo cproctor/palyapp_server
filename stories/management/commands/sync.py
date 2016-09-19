@@ -10,6 +10,9 @@ from bs4 import BeautifulSoup
 import requests
 import tempfile
 
+class NoPrimaryImageFoundError(Exception):
+    pass
+
 # Should work for Wordpress feeds, which are all we need.
 # Not robust for others.
 
@@ -48,26 +51,29 @@ def get_story_url(entry):
 def get_primary_image_url(entry):
     response = requests.get(get_story_url(entry))
     if response.status_code != requests.codes.ok:
-        return None
+        raise NoPrimaryImageFoundError("Response status code was {}.".format(response.status_code))
     soup = BeautifulSoup(response.content, 'html.parser')
-    imageIdentifiers = [
+    conatinerIdentifiers = [
         {'id': 'cb-standard-featured'}, # Campanile
         {'id': 'cb-featured-image'}, # Verde
         {'class_': 'permalinkphotobox'}, # Viking
-        {'class_': 'story-content'} # Voice
+        {'class_': 'story-content'}, # Voice
+        {'class_': 'backstretch'}
     ]
-    for identifier in imageIdentifiers:
+    for identifier in containerIdentifiers:
         container = soup.find(**identifier)
         if container:
             img = container.find('img')
             if img:
                 return clean_url(img['src'])
+    raise NoPrimaryImageFoundError("None of the image identifiers matched.")
 
 def get_primary_image(entry):
     "Download the primary image and return it as a temporary file"
     url = get_primary_image_url(entry)
     if url is None:
         return None
+
     response = requests.get(url, stream=True)
     if response.status_code != requests.codes.ok:
         return None
@@ -101,8 +107,15 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS("- Syncing {}, Page {}".format(pub.name, page)))
                     feed = parse("{}?paged={}".format(pub.feed_url, page))
                     for entry in feed.entries:
+                        self.stdout.write(self.style.SUCCESS('  - Importing: {}'.format(entry.title)))
                         pubDate = to_local_datetime(entry.published_parsed)
                         pubId = get_pub_id(entry)
+                        try:
+                            img = get_primary_image(entry)
+                            self.stdout.write(self.style.SUCCESS('    - found image url: {}'.format(img)))
+                        except NoPrimaryImageFoundError as e:
+                            self.stdout.write(self.style.WARNING('    - no primary image found: {}'.format(e)))
+                            img = None
                         try:
                             story = pub.stories.get(pub_id=pubId)
                             if options['force'] or pubDate > story.pub_date:
@@ -111,10 +124,10 @@ class Command(BaseCommand):
                                 story.authors = entry.author
                                 story.content = entry.content[0]['value']
                                 story.text = BeautifulSoup(story.content, 'html.parser').get_text()
-                                story.image = get_primary_image(entry)
+                                story.image = img
                                 story.save()
                                 story.categories.add(*get_categories(entry))
-                                self.stdout.write(self.style.SUCCESS('  - Updated {}'.format(story.title)))
+                                self.stdout.write(self.style.SUCCESS('    - Successfully updated story.'.format(story.title)))
                         except Story.DoesNotExist:
                             story = Story(
                                 title = entry.title,
@@ -123,11 +136,11 @@ class Command(BaseCommand):
                                 pub_id = pubId,
                                 authors = entry.author,
                                 content = get_content(entry),
-                                image = get_primary_image(entry)
+                                image = img
                             )
                             story.text = BeautifulSoup(story.content, 'html.parser').get_text()
                             story.save()
                             story.categories.add(*get_categories(entry))
-                            self.stdout.write(self.style.SUCCESS('  - Created {}'.format(story.title)))
+                            self.stdout.write(self.style.SUCCESS('    - Successfully created story.'))
                 pub.last_update = lastUpdate
                 pub.save()
