@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework', 
     'versatileimagefield',
+    'push_notifications',
     'stories',
     'profiles'
 ]
@@ -145,4 +146,8 @@ VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
         ('full', 'crop__640x480'),
         ('thumb', 'crop__80x80')
     ]
+}
+
+PUSH_NOTIFICATIONS_SETTINGS = {
+    "APNS_CERTIFICATE": "/path/to/your/certificate.pem",
 }

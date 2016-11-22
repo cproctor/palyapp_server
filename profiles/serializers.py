@@ -8,6 +8,7 @@ log = logging.getLogger('django')
 class UserSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     student_id = serializers.IntegerField(source='profile.student_id')
+    device_token = serializers.CharField(max_length=200)
     username = serializers.CharField(max_length=100)
     email = serializers.EmailField()
     first_name = serializers.CharField(max_length=100)

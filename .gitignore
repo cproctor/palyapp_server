@@ -2,6 +2,7 @@
 *.swp
 *.swo
 *.sqlite3
+*.pem
 settings.py
 images/*
 
