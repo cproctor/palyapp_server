@@ -109,3 +109,28 @@ class Comment(models.Model):
 
     def masked_author(self):
         return self.author if not self.anonymous else None
+
+class CommentUpvote(models.Model):
+    "Records a single user's upvote of a single comment"
+    comment = models.ForeignKey(Comment, related_name="upvotes")
+    author = models.ForeignKey('auth.User', related_name="upvotes")
+
+    def clean(self):
+        if self.comment.author == self.author:
+            raise ValidationError("Users may not upvote their own comments")
+
+    class Meta:
+        unique_together = (('comment', 'author'),)
+    
+
+
+
+
+
+
+
+
+
+
+
+

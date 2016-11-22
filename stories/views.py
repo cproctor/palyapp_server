@@ -1,11 +1,13 @@
 from rest_framework import viewsets, status
-from stories.models import Publication, Story, Category, Comment
+from stories.models import Publication, Story, Category, Comment, CommentUpvote
 from stories.serializers import PublicationSerializer, StorySerializer, CategorySerializer, CommentSerializer, MaskedCommentSerializer, AuthorDetailCommentSerializer
 from stories.custom_permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
+from rest_framework.decorators import detail_route
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 
 class PublicationViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     "API endpoint allowing REST services for publications."
@@ -37,3 +39,20 @@ class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
                 return MaskedCommentSerializer
         else:
             return CommentSerializer
+
+    @detail_route(methods=['post'])
+    def upvote(self, request, pk):
+        comment = self.get_object()
+        upvote = CommentUpvote(comment=comment, author=request.user)
+        try:
+            upvote.full_clean()
+            upvote.save()
+            return Response({'status': 'comment upvote recorded'})
+        except ValidationError as e:
+            return Response(e.message_dict[NON_FIELD_ERRORS],
+                            status=status.HTTP_400_BAD_REQUEST)
+            
+        
+
+
+

@@ -43,9 +43,15 @@ class CommentAuthorSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     "A full-power serializer for comments."
+    upvotes = serializers.SerializerMethodField()
+
+    def get_upvotes(self, obj):
+        return obj.upvotes.count()
+
     class Meta:
         model = Comment
-        fields = ('id', 'author', 'story', 'text', 'pub_date', 'anonymous')
+        fields = ('id', 'author', 'story', 'text', 'pub_date', 'upvotes', 'anonymous')
+        read_only_fields = ('votes',)
 
 class AuthorDetailCommentSerializer(CommentSerializer):
     "A serializer which offers details of authorship, but which is therefore read-only for author"
@@ -59,4 +65,8 @@ class MaskedCommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'author', 'story', 'text', 'pub_date', 'anonymous')
         read_only_fields = ('id', 'author', 'story', 'text', 'pub_date', 'anonymous')
+
+#class CommentUpvoteSerializer(serializers.ModelSerializer):
+    #class Meta:
+        #fields = ('comment', 'author')
 
