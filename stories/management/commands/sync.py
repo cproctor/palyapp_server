@@ -193,7 +193,7 @@ class Command(BaseCommand):
             feedClass = parsers.get(pub.name)
             if not feedClass:
                 continue
-            feed = feedClass(pub.name, pub.feed_url, logger=log, pages_to_scan=1)
+            feed = feedClass(pub.name, pub.feed_url, logger=log, pages_to_scan=3)
             if options['force'] or feed.last_update() is None or feed.last_update() > pub.last_update:
                 for entry in feed.entries():
                     try:
