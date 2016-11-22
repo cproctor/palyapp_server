@@ -6,6 +6,9 @@ from versatileimagefield.fields import VersatileImageField
 from versatileimagefield.placeholder import OnStoragePlaceholderImage
 from versatileimagefield.image_warmer import VersatileImageFieldWarmer
 import os
+from django.core import files
+import requests
+import tempfile
 
 def s3_image_upload(instance, filename):
     "Generates a path name for an image to upload"
@@ -49,12 +52,6 @@ class Story(models.Model):
     content = models.TextField('Raw Content') # Raw HTML
     text = models.TextField('Text Content')
     active = models.BooleanField('Active', default=True)
-    image = VersatileImageField('Image', 
-        upload_to=s3_image_upload, blank=True,
-        placeholder_image=OnStoragePlaceholderImage(
-            path='images/paly.jpg'
-        )
-    )
 
     def __str__(self):
         return "{} ({}; {}; {})".format(self.title, self.authors, self.publisher, self.pub_date.strftime("%m/%d/%y"))
@@ -62,7 +59,29 @@ class Story(models.Model):
     class Meta:
         ordering = ('publisher', 'pub_date')
 
-@receiver(models.signals.post_save, sender=Story)
+class StoryImage(models.Model):
+    story = models.ForeignKey(Story, related_name='images')
+    image = VersatileImageField('Image', 
+        upload_to=s3_image_upload, blank=True,
+        placeholder_image=OnStoragePlaceholderImage(
+            path='images/paly.jpg'
+        )
+    )
+    sequence = models.IntegerField()
+
+    @classmethod
+    def from_url(cls, url, **kwargs):
+        response = requests.get(url, stream=True)
+        if response.status_code != requests.codes.ok:
+            raise IOError("Status code for {} was {}.".format(url, response.status_code))
+        f = tempfile.NamedTemporaryFile()
+        for block in response.iter_content(1024 * 8):
+            if not block:
+                break
+            f.write(block)
+        return StoryImage(image=files.File(f), **kwargs)
+
+@receiver(models.signals.post_save, sender=StoryImage)
 def warm_story_images_images(sender, instance, **kwargs):
     """Ensures story images are created post-save"""
     story_img_warmer = VersatileImageFieldWarmer(
@@ -71,14 +90,6 @@ def warm_story_images_images(sender, instance, **kwargs):
         image_attr='image'
     )
     num_created, failed_to_create = story_img_warmer.warm()
-
-# For simplicity, not used. Each story gets 0 or 1 image.
-class StoryImage(models.Model):
-    story = models.ForeignKey(Story)
-    image = models.ImageField(upload_to=s3_image_upload)
-    caption = models.TextField(blank=True)
-    sequence = models.IntegerField()
-    # Add a resized version
 
 class Comment(models.Model):
     author = models.ForeignKey('auth.User', related_name="comments")

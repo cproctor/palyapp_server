@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from stories.models import Publication, Story, Category, Comment
+from stories.models import Publication, Story, Category, Comment, StoryImage
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 from django.contrib.auth.models import User
 
@@ -9,14 +9,21 @@ class PublicationSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'url', 'feed_url', 'logo', 'stories')
         read_only_fields = ('stories',)
 
-class StorySerializer(serializers.ModelSerializer):
+class StoryImageSerializer(serializers.ModelSerializer):
     image = VersatileImageFieldSerializer(sizes='story_image')
+
+    class Meta:
+        model = StoryImage
+        fields = ('image',)
+
+
+class StorySerializer(serializers.ModelSerializer):
+    images = StoryImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Story
         fields = ('id', 'title', 'publisher', 'pub_date', 'authors', 
-                'content', 'text', 'image', 'categories')
-        read_only_fields = ('image',)
+                'content', 'text', 'images', 'categories')
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
