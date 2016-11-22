@@ -23,6 +23,11 @@ def fix_url_scheme(url, scheme="http"):
     else:
         return url
 
+def filter_duplicates(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
+
 class WordpressFeedEntry:
     "Wraps a feedparser entry object with subclassable convenience methods"
 
@@ -83,7 +88,7 @@ class WordpressFeedEntry:
                     urls.append(url)
         if not any(urls):
             self.logger.warn("    - No images found")
-        return urls
+        return filter_duplicates(urls)
 
 class WordpressFeed:
     feedItemClass = WordpressFeedEntry
