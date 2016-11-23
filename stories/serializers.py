@@ -19,15 +19,19 @@ class StoryImageSerializer(serializers.ModelSerializer):
 
 class StorySerializer(serializers.ModelSerializer):
     images = StoryImageSerializer(many=True, read_only=True)
+    flat_image_urls = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
 
     def get_comment_count(self, obj):
         return obj.comments.count()
 
+    def get_flat_image_urls(self, obj):
+        return [i.image.url for i in obj.images.all()]
+
     class Meta:
         model = Story
         fields = ('id', 'title', 'publisher', 'pub_date', 'authors', 
-                'comment_count', 'content', 'text', 'images', 'categories')
+                'comment_count', 'content', 'text', 'images', 'flat_image_urls', 'categories')
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
