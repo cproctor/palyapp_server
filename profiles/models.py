@@ -17,7 +17,7 @@ def create_device(sender, instance, **kwargs):
             device.registration_id = instance.device_token
             device.save()
         except APNSDevice.DoesNotExist:
-            device = APNSDevice(user=instance.user, registration_id=instance.device.token)
+            device = APNSDevice(user=instance.user, registration_id=instance.device_token)
             device.save()
             
 
