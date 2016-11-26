@@ -44,4 +44,9 @@ class UserSerializer(serializers.Serializer):
 class ProfileAnalyticsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ('student_id', 'analytics_opt_out')
+        fields = ('analytics_opt_out',)
+
+class ProfileDeviceTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ('device_token',)

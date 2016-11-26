@@ -17,7 +17,7 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework_extensions import routers
 from stories import views
-from profiles.views import Signup, UpdateAnalytics
+from profiles.views import Signup, UpdateAnalytics, UpdateDeviceToken
 
 router = routers.ExtendedDefaultRouter()
 router.register('publications', views.PublicationViewSet)
@@ -49,6 +49,7 @@ urlpatterns = [
     url(r'^', include(slashless_router.urls)),
     url(r'^users/?$', Signup.as_view(), name="signup"),
     url(r'^users/analytics/?$', UpdateAnalytics.as_view(), name="update_analytics"),
+    url(r'^users/devicetoken/?$', UpdateDeviceToken.as_view(), name="update_device_token"),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^admin/', admin.site.urls),
 ]
