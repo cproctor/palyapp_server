@@ -53,6 +53,9 @@ class Story(models.Model):
     text = models.TextField('Text Content')
     active = models.BooleanField('Active', default=True)
 
+    def ios_deeplink(self):
+        return "paly://story/{}".format(self.id)
+
     def __str__(self):
         return "{} ({}; {}; {})".format(self.title, self.authors, self.publisher, self.pub_date.strftime("%m/%d/%y"))
 
@@ -109,6 +112,20 @@ class Comment(models.Model):
 
     def masked_author(self):
         return self.author if not self.anonymous else None
+
+@receiver(models.signals.post_save, sender=Comment)
+def notify_discussion_participants(sender, instance, **kwargs):
+    """Send a push notification to all other commenters when a comment is created"""
+    authors = [c.author for c in instance.story.comments.all() if c.author != instance.author]
+    devices = APNSDevice.objects.filter(user__in=authors)
+    devices.send_message(None,  extra={
+        "aps":{
+            "alert": "New comment",
+            "sound": "default",
+            "badge": 1,
+            "deeplink": instance.story.ios_deeplink()
+        }
+    })
 
 class CommentUpvote(models.Model):
     "Records a single user's upvote of a single comment"
