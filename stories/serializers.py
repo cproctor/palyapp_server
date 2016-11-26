@@ -2,6 +2,7 @@ from rest_framework import serializers
 from stories.models import Publication, Story, Category, Comment, StoryImage
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 from django.contrib.auth.models import User
+from django.db.models import Count
 
 class PublicationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,6 +22,7 @@ class StorySerializer(serializers.ModelSerializer):
     images = StoryImageSerializer(many=True, read_only=True)
     flat_image_urls = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
+    top_comments = serializers.SerializerMethodField()
 
     def get_comment_count(self, obj):
         return obj.comments.count()
@@ -28,10 +30,16 @@ class StorySerializer(serializers.ModelSerializer):
     def get_flat_image_urls(self, obj):
         return [i.image.url for i in obj.images.all()]
 
+    def get_top_comments(self, obj):
+        if obj.comments.count() == 0:
+            return []
+        else:
+            return [c.id for c in obj.comments.annotate(num_upvotes=Count('upvotes')).order_by('-num_upvotes')[:1]]
+
     class Meta:
         model = Story
         fields = ('id', 'title', 'publisher', 'pub_date', 'authors', 
-                'comment_count', 'content', 'text', 'images', 'flat_image_urls', 'categories')
+                'comment_count', 'top_comments', 'content', 'text', 'images', 'flat_image_urls', 'categories')
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
