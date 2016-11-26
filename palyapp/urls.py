@@ -31,8 +31,22 @@ storyRoutes.register(
 router.register('categories', views.CategoryViewSet)
 router.register('comments', views.CommentViewSet)
 
+# Workaround to support slashes or not in URLs.
+slashless_router = routers.ExtendedDefaultRouter(trailing_slash=False)
+slashless_router.register('publications', views.PublicationViewSet)
+storyRoutes = slashless_router.register('stories', views.StoryViewSet)
+storyRoutes.register(
+    'comments', 
+    views.CommentViewSet, 
+    base_name="story-comments", 
+    parents_query_lookups=['story']
+)
+slashless_router.register('categories', views.CategoryViewSet)
+slashless_router.register('comments', views.CommentViewSet)
+
 urlpatterns = [
     url(r'^', include(router.urls)),
+    url(r'^', include(slashless_router.urls)),
     url(r'^users/?$', Signup.as_view(), name="signup"),
     url(r'^users/analytics/?$', UpdateAnalytics.as_view(), name="update_analytics"),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
