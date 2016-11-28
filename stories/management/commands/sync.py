@@ -164,7 +164,7 @@ class PalyCampanileFeed(WordpressFeed):
 
 # Publication to parser mapping
 parsers = {
-    "Campanile": None,
+    "Campanile": PalyCampanileFeed,
     "Voice": PalyVoiceFeed,
     "Viking": PalyVikingFeed,
     "C Magazine": None,
