@@ -41,6 +41,7 @@ class WordpressFeedEntry:
     def __init__(self, parsedEntry, logger=logging):
         self.parsedEntry = parsedEntry
         self.logger = logger
+        self.soup = None
 
     def pub_id(self):
         result = re.search("p=(\d+)", self.parsedEntry['guid'])
@@ -71,10 +72,12 @@ class WordpressFeedEntry:
         return fix_url_scheme(getattr(self.parsedEntry, self.URL_KEY))
     
     def scrape(self):
-        response = requests.get(self.story_url())
-        if response.status_code != requests.codes.ok:
-            raise IOError("Response status code was {}.".format(response.status_code))
-        return BeautifulSoup(response.content, 'html.parser')
+        if not self.soup:
+            response = requests.get(self.story_url())
+            if response.status_code != requests.codes.ok:
+                raise IOError("Response status code was {}.".format(response.status_code))
+            self.soup = BeautifulSoup(response.content, 'html.parser')
+        return self.soup
 
     def image_urls(self):
         soup = self.scrape()
@@ -148,6 +151,10 @@ class PalyVerdeFeedEntry(WordpressFeedEntry):
         result = re.search("p=(\d+)", self.parsedEntry['guid'])
         return int(result.group(1))
 
+    def content(self):
+        soup = self.scrape()
+        return str(soup.section)
+        
 class PalyVerdeFeed(WordpressFeed):
     feedItemClass = PalyVerdeFeedEntry
 
