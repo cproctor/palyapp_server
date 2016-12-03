@@ -104,7 +104,7 @@ class WordpressFeed:
         return parse("{}?paged={}".format(self.url, index))
 
     def entries(self):
-        for index in range(1, self.pages_to_scan + 1):
+        for index in self.pages_to_scan:
             self.logger.info("- Syncing {}, Page {}".format(self.name, index))
             feedPage = self.get_feed_page(index) 
             for entry in feedPage.entries:
@@ -186,14 +186,26 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--force', action="store_true", dest="force", default=False,
                 help="Force updates even if the feed is not new")
+        parser.add_argument('--page', type=int)
+        parser.add_argument('--pub')
 
     def handle(self, *args, **options):
         log = CommandLogger(self)
-        for pub in Publication.objects.filter(active=True).all():
+        if options['pub'] is None:
+            pubs = Publication.objects.filter(active=True).all()
+        else:
+            pubs = Publication.objects.filter(active=True, name=options['pub']).all()
+            if len(pubs) == 0:
+                log.warn("No publications selected")
+        if options['page'] is None:
+            pages = range(1, 4)
+        else:
+            pages = [options['page']]
+        for pub in pubs:
             feedClass = parsers.get(pub.name)
             if not feedClass:
                 continue
-            feed = feedClass(pub.name, pub.feed_url, logger=log, pages_to_scan=3)
+            feed = feedClass(pub.name, pub.feed_url, logger=log, pages_to_scan=pages)
             if options['force'] or feed.last_update() is None or feed.last_update() > pub.last_update:
                 for entry in feed.entries():
                     try:
