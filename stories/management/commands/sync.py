@@ -138,6 +138,14 @@ class PalyVikingFeedEntry(WordpressFeedEntry):
         result = re.search("p=(\d+)", self.parsedEntry['guid'])
         return int(result.group(1))
 
+class PalyCMagFeedEntry(WordpressFeedEntry):
+    IMAGE_CONTAINERS = [
+        {'class_': 'postarea'}
+    ]
+    def pub_id(self):
+        result = re.search("p=(\d+)", self.parsedEntry['guid'])
+        return int(result.group(1))
+
 class PalyVikingFeed(WordpressFeed):
     feedItemClass = PalyVikingFeedEntry
      
@@ -166,6 +174,9 @@ class PalyCampanileFeedEntry(WordpressFeedEntry):
         result = re.search("p=(\d+)", self.parsedEntry['guid'])
         return int(result.group(1))
 
+class PalyCMagFeed(WordpressFeed):
+    feedItemClass = PalyCMagFeedEntry
+
 class PalyCampanileFeed(WordpressFeed):
     feedItemClass = PalyCampanileFeedEntry
 
@@ -174,7 +185,7 @@ parsers = {
     "Campanile": PalyCampanileFeed,
     "Voice": PalyVoiceFeed,
     "Viking": PalyVikingFeed,
-    "C Magazine": None,
+    "C Magazine": PalyCMagFeed,
     "Verde": PalyVerdeFeed
 }
 
@@ -193,8 +204,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--force', action="store_true", dest="force", default=False,
                 help="Force updates even if the feed is not new")
-        parser.add_argument('--page', type=int)
-        parser.add_argument('--pub')
+        parser.add_argument('--page', type=int, help="Specify which page of the feed should be parsed. Default is 1-3.")
+        parser.add_argument('--pub', help="Specify which publication should be synced. Default is all.")
 
     def handle(self, *args, **options):
         log = CommandLogger(self)
