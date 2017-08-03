@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from stories.models import Story, Category
+from stories2.models import Story, Category
 
 class Command(BaseCommand):
     help = "Update the count of number of stories for each category"

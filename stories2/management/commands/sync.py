@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.core import files
 from feedparser import parse
-from stories.models import Publication, Story, Category, StoryImage
+from stories2.models import Publication, Story, Category, StoryImage
 from time import mktime
 from datetime import datetime
 import re

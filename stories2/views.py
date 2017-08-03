@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
-from stories.models import Publication, Story, Category, Comment, CommentUpvote
-from stories.serializers import PublicationSerializer, StorySerializer, CategorySerializer, CommentSerializer, MaskedCommentSerializer, AuthorDetailCommentSerializer
-from stories.custom_permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
+from stories2.models import Publication, Story, Category, Comment, CommentUpvote
+from stories2.serializers import PublicationSerializer, StorySerializer, CategorySerializer, CommentSerializer, MaskedCommentSerializer, AuthorDetailCommentSerializer
+from stories2.custom_permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response

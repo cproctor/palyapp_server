@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from stories.models import Publication, Story, Category, Comment, StoryImage
+from stories2.models import Publication, Story, Category, Comment, StoryImage
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 from django.contrib.auth.models import User
 from django.db.models import Count

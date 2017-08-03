@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from stories.models import Comment
+from stories2.models import Comment
 
 class Command(BaseCommand):
     help = "Show comments"
