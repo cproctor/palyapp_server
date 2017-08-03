@@ -61,7 +61,6 @@ storyRoutes2.register(
     base_name="story-comments", 
     parents_query_lookups=['story']
 )
-router2.register('categories', views2.CategoryViewSet)
 router2.register('comments', views2.CommentViewSet)
 
 # Workaround to support slashes or not in URLs.

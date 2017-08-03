@@ -41,7 +41,9 @@ INSTALLED_APPS = [
     'versatileimagefield',
     'push_notifications',
     'stories',
-    'profiles'
+    'profiles',
+    'stories2',
+    'profiles2'
 ]
 
 MIDDLEWARE = [
@@ -150,4 +152,9 @@ VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
 
 PUSH_NOTIFICATIONS_SETTINGS = {
     "APNS_CERTIFICATE": "/path/to/your/certificate.pem",
+}
+
+FEED_WEIGHT = {
+    "gravity": 1.5,
+    "comment_weight": 2   
 }
