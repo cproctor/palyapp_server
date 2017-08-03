@@ -95,7 +95,7 @@ def warm_story_images_images(sender, instance, **kwargs):
     num_created, failed_to_create = story_img_warmer.warm()
 
 class Comment(models.Model):
-    author = models.ForeignKey('auth.User', related_name="comments")
+    author = models.ForeignKey('auth.User', related_name="comments_v1")
     story = models.ForeignKey(Story, related_name="comments")
     text = models.TextField()
     pub_date = models.DateTimeField()
@@ -130,7 +130,7 @@ def notify_discussion_participants(sender, instance, **kwargs):
 class CommentUpvote(models.Model):
     "Records a single user's upvote of a single comment"
     comment = models.ForeignKey(Comment, related_name="upvotes")
-    author = models.ForeignKey('auth.User', related_name="upvotes")
+    author = models.ForeignKey('auth.User', related_name="upvotes_v1")
 
     def clean(self):
         if self.comment.author == self.author:

@@ -3,7 +3,7 @@ from push_notifications.models import APNSDevice
 from django.dispatch import receiver
 
 class Profile(models.Model):    
-    user = models.OneToOneField('auth.User', related_name='profile')
+    user = models.OneToOneField('auth.User', related_name='profile_v1')
     student_id = models.IntegerField()
     analytics_opt_out = models.BooleanField(default=False)
     device_token = models.TextField(max_length=200, blank=True)
