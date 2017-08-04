@@ -11,26 +11,14 @@ feedback, and discussion. We will do this by:
 
 ## Installation
 
-### Required libraries
-
-- django (web framework)
-- djangorestframework (extends django to provide REST functionality)
-- drf-extensions (allows routing nested requests, such as a story's comments)
-- beautifulsoup4 (parse html)
-- feedparser (parse rss feeds)
-- boto (interface with Amazon s3 to store images)
-- django-storages (connect boto to django)
-- requests (make http requests)
-- pillow (image handling)
-- pytz (time zone support)
-
-## Next Steps
-
-- Add a comments model
-    - Allow user signup, so that users can create accounts (mapped to particular devices)
-- Once concept is defined for the app, what social/interactive components will there be?
-
-## MVP Goals
-
-- Sync management task can pull updates from all publication feeds. 
-- Stories, publications, comments, and categories available via REST interface.
+    git clone https://github.com/cproctor/palyapp_server.git
+    python3 -m venv env
+    source env/bin/activate
+    cd palyapp_server
+    pip install -r requirements.txt
+    cp palyapp/settings-default.py palyapp/settings.py
+    python manage.py migrate
+    python manage.py loaddata stories2/fixtures/publications.fixture.json
+    python manage.py runserver
+    open http://127.0.0.1:8000/v2/
+    
