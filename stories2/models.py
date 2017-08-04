@@ -5,13 +5,14 @@ from datetime import datetime
 from versatileimagefield.fields import VersatileImageField
 from versatileimagefield.placeholder import OnStoragePlaceholderImage
 from versatileimagefield.image_warmer import VersatileImageFieldWarmer
+from polymorphic.models import PolymorphicModel
 from django.core.exceptions import ValidationError
 import os
 from django.core import files
 import requests
 import tempfile
 from django.conf import settings
-from datetime import datetime
+from datetime import datetime, timezone
 
 def s3_image_upload(instance, filename):
     "Generates a path name for an image to upload"
@@ -47,7 +48,7 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural='categories'
 
-class FeedEntry(models.Model):
+class FeedEntry(PolymorphicModel):
     "Abstract class backing a story or topic, both of which can appear in the feed"
     title = models.CharField('Title', max_length=200)
     weight = models.FloatField('Weight', default=0)
@@ -62,11 +63,11 @@ class FeedEntry(models.Model):
     # https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d
     def update_weight(self):
         score = 1 + self.likes.count() + self.comments.count() * settings.FEED_WEIGHT['comment_weight']
-        age_in_hours = (datetime.now() - self.pub_date).seconds / (60 * 60)
+        age_in_hours = (datetime.now(timezone.utc) - self.pub_date).seconds / (60 * 60)
         self.weight = score / pow(age_in_hours + 2, settings.FEED_WEIGHT['gravity'])
 
     class Meta:
-        abstract = True
+        ordering = ['weight']
 
 class Story(FeedEntry):
     "Represents a story published by a publication"

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework', 
     'versatileimagefield',
     'push_notifications',
+    'polymorphic',
     'stories',
     'profiles',
     'stories2',

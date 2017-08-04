@@ -55,6 +55,7 @@ slashless_router2 = routers.ExtendedDefaultRouter(trailing_slash=False)
 
 for r in (router2, slashless_router2):
     r.register('users', ProfileViewSet, base_name='user')
+    r.register('feed', views2.FeedViewSet)
     r.register('publications', views2.PublicationViewSet)
     r.register('comments', views2.CommentViewSet)
     storyRoutes = r.register('stories', views2.StoryViewSet)

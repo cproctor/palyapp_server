@@ -1,13 +1,18 @@
 from rest_framework import viewsets, status
-from stories2.models import Publication, Story, Topic, Category, Comment, CommentUpvote
-from stories2.serializers import PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, MaskedCommentSerializer, AuthorDetailCommentSerializer
+from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, CommentUpvote
+from stories2.serializers import FeedSerializer, PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, MaskedCommentSerializer, AuthorDetailCommentSerializer
 from stories2.custom_permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework.decorators import detail_route
+from rest_framework import mixins
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
+
+class FeedViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = FeedEntry.objects.all()
+    serializer_class = FeedSerializer
 
 class PublicationViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     "API endpoint allowing REST services for publications."

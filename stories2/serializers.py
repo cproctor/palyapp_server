@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from stories2.models import Publication, Story, Topic, Category, Comment, StoryImage
+from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, StoryImage
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 from django.contrib.auth.models import User
 from django.db.models import Count
@@ -17,6 +17,16 @@ class StoryImageSerializer(serializers.ModelSerializer):
         model = StoryImage
         fields = ('image',)
 
+class FeedSerializer(serializers.ModelSerializer):
+    content_type = serializers.SerializerMethodField()
+
+    def get_content_type(self, obj):
+        return obj.__class__.__name__
+
+    class Meta:
+        model = FeedEntry
+        fields = ('id', 'content_type')
+
 class FeedEntrySerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
     like_count = serializers.SerializerMethodField()
@@ -26,7 +36,6 @@ class FeedEntrySerializer(serializers.ModelSerializer):
 
     def get_like_count(self, obj):
         return obj.likes.count()
-
 
 class StorySerializer(FeedEntrySerializer):
     images = StoryImageSerializer(many=True, read_only=True)
