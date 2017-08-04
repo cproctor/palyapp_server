@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from stories2.models import Publication, Story, Category, Comment, StoryImage
+from stories2.models import Publication, Story, Topic, Category, Comment, StoryImage
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 from django.contrib.auth.models import User
 from django.db.models import Count
@@ -17,36 +17,39 @@ class StoryImageSerializer(serializers.ModelSerializer):
         model = StoryImage
         fields = ('image',)
 
-
-class StorySerializer(serializers.ModelSerializer):
-    images = StoryImageSerializer(many=True, read_only=True)
-    flat_image_urls = serializers.SerializerMethodField()
+class FeedEntrySerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
-    top_comments = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
 
     def get_comment_count(self, obj):
         return obj.comments.count()
 
+    def get_like_count(self, obj):
+        return obj.likes.count()
+
+
+class StorySerializer(FeedEntrySerializer):
+    images = StoryImageSerializer(many=True, read_only=True)
+    flat_image_urls = serializers.SerializerMethodField()
+
     def get_flat_image_urls(self, obj):
         return [i.image.url for i in obj.images.all()]
 
-    def get_top_comments(self, obj):
-        if obj.comments.count() == 0:
-            return []
-        else:
-            return [c.id for c in obj.comments.annotate(num_upvotes=Count('upvotes')).order_by('-num_upvotes')[:1]]
-
     class Meta:
         model = Story
-        fields = ('id', 'title', 'publisher', 'pub_date', 'authors', 
-                'comment_count', 'top_comments', 'content', 'text', 'images', 'flat_image_urls', 'categories')
+        fields = ('id', 'title', 'publisher', 'pub_id', 'pub_date', 'authors', 
+                'comment_count', 'content', 'text', 'images', 'flat_image_urls', 'categories')
+
+class TopicSerializer(FeedEntrySerializer):
+    class Meta: 
+        model = Topic
+        fields = ('id', 'title', 'weight', 'pub_date', 'stories', 'comment_count', 'like_count')
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('id', 'name', 'stories', 'story_count')
         read_only_fields = ('story_count',)
-        #depth = 1
 
 class CommentAuthorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,8 +65,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('id', 'author', 'story', 'text', 'pub_date', 'upvotes', 'anonymous')
-        read_only_fields = ('votes',)
+        fields = ('id', 'author', 'story', 'text', 'pub_date', 'upvotes')
 
 class AuthorDetailCommentSerializer(CommentSerializer):
     "A serializer which offers details of authorship, but which is therefore read-only for author"

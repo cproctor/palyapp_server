@@ -44,6 +44,9 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name_plural='categories'
+
 class FeedEntry(models.Model):
     "Abstract class backing a story or topic, both of which can appear in the feed"
     title = models.CharField('Title', max_length=200)
@@ -70,7 +73,7 @@ class Story(FeedEntry):
     publisher = models.ForeignKey(Publication, related_name='stories')
     pub_id = models.IntegerField('Publication ID')
     authors = models.TextField('Authors') # To keep things simple, we will not have an authors object.
-    categories = models.ManyToManyField(Category, related_name='stories')
+    categories = models.ManyToManyField(Category, related_name='stories', blank=True)
     content = models.TextField('Raw Content') # Raw HTML
     text = models.TextField('Text Content')
 
@@ -82,6 +85,7 @@ class Story(FeedEntry):
 
     class Meta:
         ordering = ('publisher', 'pub_date')
+        verbose_name_plural='stories'
 
 class StoryLike(models.Model):
     liker = models.ForeignKey('auth.User', related_name="liked_stories")
@@ -121,7 +125,7 @@ def warm_story_images_images(sender, instance, **kwargs):
 
 class Topic(FeedEntry):
     "Represents a topic"
-    stories = models.ManyToManyField(Story, related_name='topics')
+    stories = models.ManyToManyField(Story, related_name='topics', blank=True)
 
     def ios_deeplink(self):
         return "paly://topic/{}".format(self.id)
@@ -133,6 +137,8 @@ class TopicLike(models.Model):
     liker = models.ForeignKey('auth.User', related_name="liked_topics")
     topic = models.ForeignKey(Topic, related_name="likes")
 
+# Used this foreign key strategy so that downstream objects (commentUpvotes) don't have to be subclassed
+# for FeedItems
 class Comment(models.Model):
     author = models.ForeignKey('auth.User', related_name="comments")
     story = models.ForeignKey(Story, related_name="comments", null=True)

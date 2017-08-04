@@ -48,43 +48,41 @@ slashless_router.register('comments', views.CommentViewSet)
 
 # ===================================== V2 API =====================================
 from stories2 import views as views2
-from profiles2.views import Signup as Signup2
-from profiles2.views import UpdateAnalytics as UpdateAnalytics2
-from profiles2.views import UpdateDeviceToken as UpdateDeviceToken2
+from profiles2.views import ProfileViewSet
 
 router2 = routers.ExtendedDefaultRouter()
-router2.register('publications', views2.PublicationViewSet)
-storyRoutes2 = router2.register('stories', views2.StoryViewSet)
-storyRoutes2.register(
-    'comments', 
-    views2.CommentViewSet, 
-    base_name="story-comments", 
-    parents_query_lookups=['story']
-)
-router2.register('comments', views2.CommentViewSet)
-
-# Workaround to support slashes or not in URLs.
 slashless_router2 = routers.ExtendedDefaultRouter(trailing_slash=False)
-slashless_router2.register('publications', views2.PublicationViewSet)
-storyRoutes2 = slashless_router2.register('stories', views2.StoryViewSet)
-storyRoutes2.register(
-    'comments', 
-    views2.CommentViewSet, 
-    base_name="story-comments", 
-    parents_query_lookups=['story']
-)
-slashless_router2.register('categories', views2.CategoryViewSet)
-slashless_router2.register('comments', views2.CommentViewSet)
+
+for r in (router2, slashless_router2):
+    r.register('users', ProfileViewSet, base_name='user')
+    r.register('publications', views2.PublicationViewSet)
+    r.register('comments', views2.CommentViewSet)
+    storyRoutes = r.register('stories', views2.StoryViewSet)
+    storyRoutes.register(
+        'comments', 
+        views2.CommentViewSet, 
+        base_name="story-comments", 
+        parents_query_lookups=['story']
+    )
+    topicRoutes = r.register('topics', views2.TopicViewSet)
+    topicRoutes.register(
+        'comments', 
+        views2.CommentViewSet,
+        base_name="topic-comments",
+        parents_query_lookups=['topic']
+    )
 
 # ===================================== Global =====================================
 urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^', include(slashless_router.urls)),
-    url(r'^v2/', include(router2.urls, namespace='v2')),
-    url(r'^v2/', include(slashless_router2.urls, namespace='v2_no_slash')),
     url(r'^users/?$', Signup.as_view(), name="signup"),
     url(r'^users/analytics/?$', UpdateAnalytics.as_view(), name="update_analytics"),
     url(r'^users/devicetoken/?$', UpdateDeviceToken.as_view(), name="update_device_token"),
+
+    url(r'^v2/', include(router2.urls, namespace='v2')),
+    url(r'^v2/', include(slashless_router2.urls, namespace='v2_no_slash')),
+
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^admin/', admin.site.urls),
 ]

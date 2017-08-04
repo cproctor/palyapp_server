@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
-from stories2.models import Publication, Story, Category, Comment, CommentUpvote
-from stories2.serializers import PublicationSerializer, StorySerializer, CategorySerializer, CommentSerializer, MaskedCommentSerializer, AuthorDetailCommentSerializer
+from stories2.models import Publication, Story, Topic, Category, Comment, CommentUpvote
+from stories2.serializers import PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, MaskedCommentSerializer, AuthorDetailCommentSerializer
 from stories2.custom_permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.shortcuts import get_object_or_404
@@ -19,6 +19,12 @@ class StoryViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     "API endpoint allowing REST services for stories."
     queryset = Story.objects.filter(active=True)
     serializer_class = StorySerializer
+    permission_classes = (IsAdminOrReadOnly,)
+
+class TopicViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+    "API endpoint allowing REST services for topics."
+    queryset = Topic.objects.filter(active=True)
+    serializer_class = TopicSerializer
     permission_classes = (IsAdminOrReadOnly,)
 
 class CategoryViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
