@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, CommentUpvote
-from stories2.serializers import FeedSerializer, PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, AuthTokenCommentSerializer
+from stories2.serializers import FeedSerializer, PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, AuthTokenCommentSerializer, AuthTokenCommentUpvoteSerializer
 from stories2.custom_permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS
 from django.shortcuts import get_object_or_404
@@ -46,22 +46,16 @@ class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'GET': 
             return CommentSerializer
+        elif self.action == 'upvote':
+            return AuthTokenCommentUpvoteSerializer
         else:
             return AuthTokenCommentSerializer
 
     @detail_route(methods=['post'])
     def upvote(self, request, pk):
-        comment = self.get_object()
-        upvote = CommentUpvote(comment=comment, author=request.user)
-        try:
-            upvote.full_clean()
-            upvote.save()
-            return Response({'status': 'comment upvote recorded'})
-        except ValidationError as e:
-            return Response(e.message_dict[NON_FIELD_ERRORS],
-                            status=status.HTTP_400_BAD_REQUEST)
-            
-        
-
-
-
+        data = {"comment": pk, "auth_token": self.request.data['auth_token']}
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

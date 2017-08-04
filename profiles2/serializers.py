@@ -57,4 +57,19 @@ class SignupProfileSerializer(serializers.Serializer):
         profile.save()
         return profile
 
+class AuthTokenUserSerializer(serializers.Serializer):
+    "Translates an auth token into a user"
+    auth_token = serializers.CharField(max_length=100, write_only=True)
+
+    def validate_auth_token(self, value):
+        try:
+            profile = Profile.objects.get(auth_token=value)
+        except Profile.DoesNotExist:
+            raise serializers.ValidationError("Invalid auth token")
+        return value
+
+    def create(self, validated_data):
+        profile = Profile.objects.get(auth_token=validated_data['auth_token'])
+        return profile.user
+
 

@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, StoryImage
+from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, StoryImage, CommentUpvote
 from profiles2.models import Profile
+from profiles2.serializers import AuthTokenUserSerializer
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 from django.contrib.auth.models import User
 from django.db.models import Count
@@ -110,3 +111,23 @@ class AuthTokenCommentSerializer(serializers.Serializer):
         )
         comment.save()
         return comment
+
+class AuthTokenCommentUpvoteSerializer(AuthTokenUserSerializer):
+    "Translates an auth token into a CommentUpvote"
+    comment = serializers.PrimaryKeyRelatedField(queryset=Comment.objects.all())
+
+    def validate(self, data):
+        comment = data['comment']
+        if comment.upvotes.filter(author__profile__auth_token=data['auth_token']).exists():
+           raise serializers.ValidationError("User has already upvoted this comment") 
+        if hasattr(comment.author, 'profile') and comment.author.profile.auth_token == validated_data['auth_token']:
+            raise serializers.ValidationError("Users may not upvote their own comments")
+        return data
+
+    def create(self, validated_data):
+        upvote = CommentUpvote(
+            author=Profile.objects.get(auth_token=validated_data['auth_token']).user,
+            comment=validated_data['comment']
+        )
+        upvote.save()
+        return upvote
