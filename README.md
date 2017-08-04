@@ -11,6 +11,9 @@ feedback, and discussion. We will do this by:
 
 ## Installation
 
+These instructions are for Linux or Mac, but with a little tweaking they should work fine on 
+Windows too. Open Terminal and type the following:
+
     git clone https://github.com/cproctor/palyapp_server.git
     python3 -m venv env
     source env/bin/activate
