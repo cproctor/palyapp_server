@@ -7,7 +7,11 @@ import re
 log = logging.getLogger('django')
 
 class ProfileSerializer(serializers.ModelSerializer):
+    uid = serializers.SerializerMethodField()
     active = serializers.SerializerMethodField()
+
+    def get_uid(self, obj):
+        return obj.user.id
 
     def get_active(self, obj):
         return obj.active
@@ -18,9 +22,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ('auth_token', 'active')
     
 class UsernameProfileSerializer(serializers.ModelSerializer):
+    uid = serializers.SerializerMethodField()
+
+    def get_uid(self, obj):
+        return obj.user.id
+
     class Meta:
         model = Profile
-        fields = ('username',)
+        fields = ('username','uid')
 
 class SignupProfileSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=100)

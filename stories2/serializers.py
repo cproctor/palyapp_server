@@ -60,13 +60,8 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'stories', 'story_count')
         read_only_fields = ('story_count',)
 
-class CommentAuthorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'first_name', 'last_name')
-
 class CommentSerializer(serializers.ModelSerializer):
-    "A full-power serializer for comments."
+    "A comment serializer"
     upvotes = serializers.SerializerMethodField()
 
     def get_upvotes(self, obj):
@@ -74,22 +69,37 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('id', 'author', 'story', 'text', 'pub_date', 'upvotes')
+        fields = ('id', 'author', 'story', 'topic', 'text', 'pub_date', 'upvotes', 'promoted')
 
-class AuthorDetailCommentSerializer(CommentSerializer):
-    "A serializer which offers details of authorship, but which is therefore read-only for author"
-    author = CommentAuthorSerializer(read_only=True)
+class AuthTokenCommentSerializer(serializers.Serializer):
+    "A comment serializer which requires auth_tokens for destrictive actions"
+    auth_token = serializers.CharField(max_length=100, read_only=True)
+    story = serializers.PrimaryKeyRelatedField(queryset=Story.objects.all(), allow_null=True)
+    topic = serializers.PrimaryKeyRelatedField(queryset=Topic.objects.all(), allow_null=True)
+    text = serializers.CharField(trim_whitespace=True)
 
-class MaskedCommentSerializer(serializers.ModelSerializer):
-    "A read-only serializer for comments which hides the authors of anonymous comments"
-    author = CommentAuthorSerializer(read_only=True, source='masked_author')
+    def validate_text(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Comment text must not be empty")
 
-    class Meta:
-        model = Comment
-        fields = ('id', 'author', 'story', 'text', 'pub_date', 'anonymous')
-        read_only_fields = ('id', 'author', 'story', 'text', 'pub_date', 'anonymous')
+    def validate(self, data):
+        try:
+            profile = Profile.objects.get(auth_token=data.auth_token)
+        except Profile.DoesNotExist:
+            raise serializers.ValidationError("Invalid auth token")
 
-#class CommentUpvoteSerializer(serializers.ModelSerializer):
-    #class Meta:
-        #fields = ('comment', 'author')
+        if data.story is None and data.topic is None:
+            raise serializers.ValidationError("Comments must have a story or a topic")
+        if not (data.story is None or data.topic is None):
+            raise serializers.ValidationError("Comments must not have a story and a topic")
 
+    def create(self, validated_data):
+        profile = Profile.objects.get(auth_token=validated_data['auth_token'])
+        comment = Comment(
+            user = profile.user,
+            story = get_object_or_404(Story, validated_data['story']) if story else None,
+            topic = get_object_or_404(Topic, validated_data['topic']) if topic else None,
+            pub_date = datetime.now()
+        )
+        comment.save()
+        return comment

@@ -13,6 +13,7 @@ import requests
 import tempfile
 from django.conf import settings
 from datetime import datetime, timezone
+from push_notifications.models import APNSDevice
 
 def s3_image_upload(instance, filename):
     "Generates a path name for an image to upload"
@@ -82,7 +83,7 @@ class Story(FeedEntry):
         return "paly://story/{}".format(self.id)
 
     def __str__(self):
-        return "{} ({}; {}; {})".format(self.title, self.authors, self.publisher, self.pub_date.strftime("%m/%d/%y"))
+        return "{} by {} of {} (weight: {:.2g}; published: {})".format(self.title, self.authors, self.publisher, self.weight, self.pub_date.strftime("%m/%d/%y"))
 
     class Meta:
         ordering = ('publisher', 'pub_date')
@@ -132,7 +133,8 @@ class Topic(FeedEntry):
         return "paly://topic/{}".format(self.id)
 
     def __str__(self):
-        return "{} (weight: {}; published: {})".format(self.title, self.weight, self.pub_date.strftime("%m/%d/%y"))
+        return "{} (weight: {:.2g}; published: {})".format(
+                self.title, self.weight, self.pub_date.strftime("%m/%d/%y"))
 
 class TopicLike(models.Model):
     liker = models.ForeignKey('auth.User', related_name="liked_topics")
@@ -146,6 +148,7 @@ class Comment(models.Model):
     topic = models.ForeignKey(Topic, related_name="comments", null=True)
     text = models.TextField()
     pub_date = models.DateTimeField()
+    promoted = models.BooleanField(default=False)
 
     def clean(self):
         if self.story is None and self.topic is None:

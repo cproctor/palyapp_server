@@ -1,8 +1,8 @@
 from rest_framework import viewsets, status
 from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, CommentUpvote
-from stories2.serializers import FeedSerializer, PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, MaskedCommentSerializer, AuthorDetailCommentSerializer
+from stories2.serializers import FeedSerializer, PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, AuthTokenCommentSerializer
 from stories2.custom_permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
-from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -39,17 +39,15 @@ class CategoryViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
 class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     "API endpoint for comments"
-    permission_classes = (IsAuthenticated, IsAuthorOrAdminOrReadOnly)
+    permission_classes = (AllowAny,)
+    serializer_class = CommentSerializer
     queryset = Comment.objects.all()
 
     def get_serializer_class(self):
-        if self.request.method in SAFE_METHODS:
-            if self.request.user.is_superuser:
-                return AuthorDetailCommentSerializer
-            else:
-                return MaskedCommentSerializer
-        else:
+        if self.request.method == 'GET': 
             return CommentSerializer
+        else:
+            return AuthTokenCommentSerializer
 
     @detail_route(methods=['post'])
     def upvote(self, request, pk):

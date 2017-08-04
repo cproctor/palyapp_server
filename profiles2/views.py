@@ -18,7 +18,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
                    viewsets.GenericViewSet):
     "Handles profile-related views, including user fields provided via profiles"
     permission_classes = (AllowAny,)
-    queryset = Profile.objects.all()
+    queryset = Profile.objects.filter(user__is_active=True).all()
     #lookup_field = 'auth_token'
 
     def get_serializer_class(self):
