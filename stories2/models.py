@@ -157,25 +157,32 @@ class Comment(models.Model):
             raise ValidationError("Comments must not have a story and a topic")
 
     def __str__(self):
-        return '"{}" (user {} on story {} at {}{})'.format(
+        if self.story:
+            ct = "story"
+            title = self.story.title
+        else:
+            ct = "topic"
+            title = self.topic.title
+        return '"{}" ({} on {} "{}" at {})'.format(
             self.text,
-            self.author.id,
-            self.story.id,
-            self.pub_date.strftime("%m/%d/%y"),
-            "; anonymous" if self.anonymous else ""
+            self.author.username,
+            ct, 
+            title,
+            self.pub_date.strftime("%m/%d/%y")
         )
 
 @receiver(models.signals.post_save, sender=Comment)
 def notify_discussion_participants(sender, instance, **kwargs):
     """Send a push notification to all other commenters when a comment is created"""
-    authors = [c.author for c in instance.story.comments.all() if c.author != instance.author]
+    subject = instance.story or instance.topic
+    authors = [c.author for c in subject.comments.all() if c.author != instance.author]
     devices = APNSDevice.objects.filter(user__in=authors)
     devices.send_message(None,  extra={
         "aps":{
             "alert": "New comment",
             "sound": "default",
             "badge": 1,
-            "deeplink": instance.story.ios_deeplink()
+            "deeplink": subject.ios_deeplink()
         }
     })
 

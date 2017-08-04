@@ -1,8 +1,12 @@
 from rest_framework import serializers
 from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, StoryImage
+from profiles2.models import Profile
 from versatileimagefield.serializers import VersatileImageFieldSerializer
 from django.contrib.auth.models import User
 from django.db.models import Count
+from django.shortcuts import get_object_or_404
+from django.http import Http404
+from datetime import datetime
 
 class PublicationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -73,7 +77,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class AuthTokenCommentSerializer(serializers.Serializer):
     "A comment serializer which requires auth_tokens for destrictive actions"
-    auth_token = serializers.CharField(max_length=100, read_only=True)
+    auth_token = serializers.CharField(max_length=100, write_only=True)
     story = serializers.PrimaryKeyRelatedField(queryset=Story.objects.all(), allow_null=True)
     topic = serializers.PrimaryKeyRelatedField(queryset=Topic.objects.all(), allow_null=True)
     text = serializers.CharField(trim_whitespace=True)
@@ -81,24 +85,27 @@ class AuthTokenCommentSerializer(serializers.Serializer):
     def validate_text(self, value):
         if not value.strip():
             raise serializers.ValidationError("Comment text must not be empty")
+        return value
 
     def validate(self, data):
         try:
-            profile = Profile.objects.get(auth_token=data.auth_token)
+            profile = Profile.objects.get(auth_token=data['auth_token'])
         except Profile.DoesNotExist:
             raise serializers.ValidationError("Invalid auth token")
 
-        if data.story is None and data.topic is None:
+        if data['story'] is None and data['topic'] is None:
             raise serializers.ValidationError("Comments must have a story or a topic")
-        if not (data.story is None or data.topic is None):
+        if not (data['story'] is None or data['topic'] is None):
             raise serializers.ValidationError("Comments must not have a story and a topic")
+        return data
 
     def create(self, validated_data):
         profile = Profile.objects.get(auth_token=validated_data['auth_token'])
         comment = Comment(
-            user = profile.user,
-            story = get_object_or_404(Story, validated_data['story']) if story else None,
-            topic = get_object_or_404(Topic, validated_data['topic']) if topic else None,
+            author = profile.user,
+            story = get_object_or_404(Story, pk=validated_data['story']) if validated_data['story'] else None,
+            topic = get_object_or_404(Topic, pk=validated_data['topic']) if validated_data['topic'] else None,
+            text = validated_data['text'],
             pub_date = datetime.now()
         )
         comment.save()
