@@ -198,6 +198,25 @@ class CommentUpvote(models.Model):
     class Meta:
         unique_together = (('comment', 'author'),)
     
+class CommentFlag(models.Model):
+    "Records a single user's flagging of a single comment"
+    comment = models.ForeignKey(Comment, related_name="flags")
+    author = models.ForeignKey('auth.User', related_name="flags")
+
+    class Meta:
+        unique_together = (('comment', 'author'),)
+    
+
+
+
+
+
+
+
+
+
+
+
 
 
 

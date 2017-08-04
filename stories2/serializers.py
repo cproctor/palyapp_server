@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, StoryImage, CommentUpvote
+from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, StoryImage, CommentUpvote, CommentFlag
 from profiles2.models import Profile
 from profiles2.serializers import AuthTokenUserSerializer
 from versatileimagefield.serializers import VersatileImageFieldSerializer
@@ -68,13 +68,17 @@ class CategorySerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     "A comment serializer"
     upvotes = serializers.SerializerMethodField()
+    flags = serializers.SerializerMethodField()
 
     def get_upvotes(self, obj):
         return obj.upvotes.count()
 
+    def get_flags(self, obj):
+        return obj.flags.count()
+
     class Meta:
         model = Comment
-        fields = ('id', 'author', 'story', 'topic', 'text', 'pub_date', 'upvotes', 'promoted')
+        fields = ('id', 'author', 'story', 'topic', 'text', 'pub_date', 'upvotes', 'flags', 'promoted')
 
 class AuthTokenCommentSerializer(serializers.Serializer):
     "A comment serializer which requires auth_tokens for destrictive actions"
@@ -131,3 +135,21 @@ class AuthTokenCommentUpvoteSerializer(AuthTokenUserSerializer):
         )
         upvote.save()
         return upvote
+
+class AuthTokenCommentFlagSerializer(AuthTokenUserSerializer):
+    "Translates an auth token into a CommentFlag"
+    comment = serializers.PrimaryKeyRelatedField(queryset=Comment.objects.all())
+
+    def validate(self, data):
+        comment = data['comment']
+        if comment.flags.filter(author__profile__auth_token=data['auth_token']).exists():
+           raise serializers.ValidationError("User has already flagged this comment") 
+        return data
+
+    def create(self, validated_data):
+        flag = CommentFlag(
+            author=Profile.objects.get(auth_token=validated_data['auth_token']).user,
+            comment=validated_data['comment']
+        )
+        flag.save()
+        return flag

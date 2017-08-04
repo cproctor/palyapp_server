@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, CommentUpvote
-from stories2.serializers import FeedSerializer, PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, AuthTokenCommentSerializer, AuthTokenCommentUpvoteSerializer
+from stories2.serializers import FeedSerializer, PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, AuthTokenCommentSerializer, AuthTokenCommentUpvoteSerializer,AuthTokenCommentFlagSerializer
 from stories2.custom_permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS
 from django.shortcuts import get_object_or_404
@@ -48,11 +48,22 @@ class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
             return CommentSerializer
         elif self.action == 'upvote':
             return AuthTokenCommentUpvoteSerializer
+        elif self.action == 'flag':
+            return AuthTokenCommentFlagSerializer
         else:
             return AuthTokenCommentSerializer
 
     @detail_route(methods=['post'])
     def upvote(self, request, pk):
+        data = {"comment": pk, "auth_token": self.request.data['auth_token']}
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @detail_route(methods=['post'])
+    def flag(self, request, pk):
         data = {"comment": pk, "auth_token": self.request.data['auth_token']}
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
