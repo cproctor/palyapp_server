@@ -46,7 +46,7 @@ class StorySerializer(FeedEntrySerializer):
 
     class Meta:
         model = Story
-        fields = ('id', 'title', 'publisher', 'pub_id', 'pub_date', 'authors', 
+        fields = ('id', 'title', 'weight', 'publisher', 'pub_id', 'pub_date', 'authors', 
                 'comment_count', 'content', 'text', 'images', 'flat_image_urls', 'categories')
 
 class TopicSerializer(FeedEntrySerializer):
