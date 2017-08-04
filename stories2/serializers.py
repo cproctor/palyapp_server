@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, StoryImage, CommentUpvote, CommentFlag
+from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, StoryImage, CommentUpvote, CommentFlag, StoryLike, TopicLike
 from profiles2.models import Profile
 from profiles2.serializers import AuthTokenUserSerializer
 from versatileimagefield.serializers import VersatileImageFieldSerializer
@@ -52,7 +52,7 @@ class StorySerializer(FeedEntrySerializer):
     class Meta:
         model = Story
         fields = ('id', 'title', 'weight', 'publisher', 'pub_id', 'pub_date', 'authors', 
-                'comment_count', 'content', 'text', 'images', 'flat_image_urls', 'categories')
+                'comment_count', 'content', 'text', 'images', 'flat_image_urls', 'categories', 'like_count')
 
 class TopicSerializer(FeedEntrySerializer):
     class Meta: 
@@ -115,6 +115,40 @@ class AuthTokenCommentSerializer(serializers.Serializer):
         )
         comment.save()
         return comment
+
+class AuthTokenStoryLikeSerializer(AuthTokenUserSerializer):
+    "Translates an auth token into a story like" 
+    story = serializers.PrimaryKeyRelatedField(queryset=Story.objects.all())
+
+    def validate(self, data):
+        if data['story'].likes.filter(liker__profile__auth_token=data['auth_token']).exists():
+            raise serializers.ValidationError("User has already liked this story")
+        return data
+
+    def create(self, validated_data):
+        like = StoryLike(
+            liker=Profile.objects.get(auth_token=validated_data['auth_token']).user,
+            story=validated_data['story']
+        )
+        like.save()
+        return like
+
+class AuthTokenTopicLikeSerializer(AuthTokenUserSerializer):
+    "Translates an auth token into a topic like" 
+    topic = serializers.PrimaryKeyRelatedField(queryset=Topic.objects.all())
+
+    def validate(self, data):
+        if data['topic'].likes.filter(liker__profile__auth_token=data['auth_token']).exists():
+            raise serializers.ValidationError("User has already liked this topic")
+        return data
+
+    def create(self, validated_data):
+        like = TopicLike(
+            liker=Profile.objects.get(auth_token=validated_data['auth_token']).user,
+            topic=validated_data['topic']
+        )
+        like.save()
+        return like
 
 class AuthTokenCommentUpvoteSerializer(AuthTokenUserSerializer):
     "Translates an auth token into a CommentUpvote"

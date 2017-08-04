@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, CommentUpvote
-from stories2.serializers import FeedSerializer, PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, AuthTokenCommentSerializer, AuthTokenCommentUpvoteSerializer,AuthTokenCommentFlagSerializer
+from stories2.serializers import FeedSerializer, PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, AuthTokenCommentSerializer, AuthTokenCommentUpvoteSerializer,AuthTokenCommentFlagSerializer, AuthTokenStoryLikeSerializer, AuthTokenTopicLikeSerializer
 from stories2.custom_permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS
 from django.shortcuts import get_object_or_404
@@ -23,14 +23,42 @@ class PublicationViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 class StoryViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     "API endpoint allowing REST services for stories."
     queryset = Story.objects.filter(active=True)
-    serializer_class = StorySerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (AllowAny,) # TODO TROUBLE
+
+    def get_serializer_class(self):
+        if self.action == 'like':
+            return AuthTokenStoryLikeSerializer
+        else:
+            return StorySerializer
+
+    @detail_route(methods=['post'])
+    def like(self, request, pk):
+        data = {"story": pk, "auth_token": self.request.data['auth_token']}
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class TopicViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     "API endpoint allowing REST services for topics."
     queryset = Topic.objects.filter(active=True)
-    serializer_class = TopicSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (AllowAny,) # TODO TROUBLE
+
+    def get_serializer_class(self):
+        if self.action == 'like':
+            return AuthTokenTopicLikeSerializer
+        else:
+            return TopicSerializer
+
+    @detail_route(methods=['post'])
+    def like(self, request, pk):
+        data = {"topic": pk, "auth_token": self.request.data['auth_token']}
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class CategoryViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = Category.objects.filter(story_count__gte=3)
