@@ -29,7 +29,7 @@ class UsernameProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('username','uid')
+        fields = ('username', 'publication', 'uid')
 
 class SignupProfileSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=100)

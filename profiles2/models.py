@@ -1,4 +1,5 @@
 from django.db import models
+from stories2.models import Publication
 from push_notifications.models import APNSDevice
 from django.dispatch import receiver
 from django.contrib.auth.models import User
@@ -6,6 +7,7 @@ from django.contrib.auth.models import User
 class Profile(models.Model):    
     user = models.OneToOneField('auth.User', related_name='profile')
     username = models.CharField(max_length=200, unique=True)
+    publication = models.ForeignKey(Publication, related_name='authors', null=True)
     auth_token = models.CharField(max_length=200, primary_key=True)
     analytics = models.BooleanField(default=True)
     device_token = models.TextField(max_length=200, blank=True)
