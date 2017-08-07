@@ -18,7 +18,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('username', 'analytics', 'device_token', 'active')
+        fields = ('uid', 'username', 'analytics', 'device_token', 'active', 'role', 'gender', 'race_ethnicity')
         read_only_fields = ('auth_token', 'active')
     
 class UsernameProfileSerializer(serializers.ModelSerializer):

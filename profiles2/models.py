@@ -11,6 +11,9 @@ class Profile(models.Model):
     auth_token = models.CharField(max_length=200, primary_key=True)
     analytics = models.BooleanField(default=True)
     device_token = models.TextField(max_length=200, blank=True)
+    role = models.CharField(max_length=100, null=True)
+    gender = models.CharField(max_length=100, null=True)
+    race_ethnicity = models.CharField(max_length=100, null=True)
 
     @property
     def active(self):
