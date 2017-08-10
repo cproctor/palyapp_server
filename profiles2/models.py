@@ -7,13 +7,13 @@ from django.contrib.auth.models import User
 class Profile(models.Model):    
     user = models.OneToOneField('auth.User', related_name='profile')
     username = models.CharField(max_length=200, unique=True)
-    publication = models.ForeignKey(Publication, related_name='authors', null=True)
+    publication = models.ForeignKey(Publication, related_name='authors', null=True, blank=True)
     auth_token = models.CharField(max_length=200, primary_key=True)
     analytics = models.BooleanField(default=True)
     device_token = models.TextField(max_length=200, blank=True)
-    role = models.CharField(max_length=100, null=True)
-    gender = models.CharField(max_length=100, null=True)
-    race_ethnicity = models.CharField(max_length=100, null=True)
+    role = models.CharField(max_length=100, null=True, blank=True)
+    gender = models.CharField(max_length=100, null=True, blank=True)
+    race_ethnicity = models.CharField(max_length=100, null=True, blank=True)
 
     @property
     def active(self):
