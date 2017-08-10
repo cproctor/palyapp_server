@@ -25,9 +25,9 @@ router = routers.ExtendedDefaultRouter()
 router.register('publications', views.PublicationViewSet)
 storyRoutes = router.register('stories', views.StoryViewSet)
 storyRoutes.register(
-    'comments', 
-    views.CommentViewSet, 
-    base_name="story-comments", 
+    'comments',
+    views.CommentViewSet,
+    base_name="story-comments",
     parents_query_lookups=['story']
 )
 router.register('categories', views.CategoryViewSet)
@@ -38,9 +38,9 @@ slashless_router = routers.ExtendedDefaultRouter(trailing_slash=False)
 slashless_router.register('publications', views.PublicationViewSet)
 storyRoutes = slashless_router.register('stories', views.StoryViewSet)
 storyRoutes.register(
-    'comments', 
-    views.CommentViewSet, 
-    base_name="story-comments", 
+    'comments',
+    views.CommentViewSet,
+    base_name="story-comments",
     parents_query_lookups=['story']
 )
 slashless_router.register('categories', views.CategoryViewSet)
@@ -52,6 +52,7 @@ from profiles2.views import ProfileViewSet
 
 router2 = routers.ExtendedDefaultRouter()
 slashless_router2 = routers.ExtendedDefaultRouter(trailing_slash=False)
+flagrouter = routers.SimpleRouter()
 
 for r in (router2, slashless_router2):
     r.register('users', ProfileViewSet, base_name='user')
@@ -60,18 +61,20 @@ for r in (router2, slashless_router2):
     r.register('comments', views2.CommentViewSet)
     storyRoutes = r.register('stories', views2.StoryViewSet)
     storyRoutes.register(
-        'comments', 
-        views2.CommentViewSet, 
-        base_name="story-comments", 
+        'comments',
+        views2.CommentViewSet,
+        base_name="story-comments",
         parents_query_lookups=['story']
     )
     topicRoutes = r.register('topics', views2.TopicViewSet)
     topicRoutes.register(
-        'comments', 
+        'comments',
         views2.CommentViewSet,
         base_name="topic-comments",
         parents_query_lookups=['topic']
     )
+
+flagrouter.register(r'flagged_comments', views2.FlaggedViewSet)
 
 # ===================================== Global =====================================
 urlpatterns = [
@@ -86,4 +89,6 @@ urlpatterns = [
 
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^admin/', admin.site.urls),
+    
+    url(r'^v2/admin/', include(flagrouter.urls)),
 ]

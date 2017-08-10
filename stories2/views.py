@@ -1,5 +1,5 @@
-from rest_framework import viewsets, status
-from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, CommentUpvote
+from rest_framework import viewsets, status, generics
+from stories2.models import FeedEntry, Publication, Story, Topic, Category, Comment, CommentUpvote, CommentFlag
 from stories2.serializers import FeedSerializer, PublicationSerializer, StorySerializer, TopicSerializer, CategorySerializer, CommentSerializer, AuthTokenCommentSerializer, AuthTokenCommentUpvoteSerializer,AuthTokenCommentFlagSerializer, AuthTokenStoryLikeSerializer, AuthTokenTopicLikeSerializer
 from stories2.custom_permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS
@@ -9,6 +9,7 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework.decorators import detail_route
 from rest_framework import mixins
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
+from django.db.models import Count
 
 class FeedViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = FeedEntry.objects.all()
@@ -72,7 +73,7 @@ class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     queryset = Comment.objects.all()
 
     def get_serializer_class(self):
-        if self.request.method == 'GET': 
+        if self.request.method == 'GET':
             return CommentSerializer
         elif self.action == 'upvote':
             return AuthTokenCommentUpvoteSerializer
@@ -98,3 +99,8 @@ class CommentViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         serializer.save()
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class FlaggedViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+    queryset = Comment.objects.annotate(flag_count=Count('flags')).filter(flag_count__gt=0).all()
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticated,)
