@@ -158,7 +158,7 @@ class AuthTokenCommentUpvoteSerializer(AuthTokenUserSerializer):
         comment = data['comment']
         if comment.upvotes.filter(author__profile__auth_token=data['auth_token']).exists():
            raise serializers.ValidationError("User has already upvoted this comment") 
-        if hasattr(comment.author, 'profile') and comment.author.profile.auth_token == validated_data['auth_token']:
+        if hasattr(comment.author, 'profile') and comment.author.profile.auth_token == data['auth_token']:
             raise serializers.ValidationError("Users may not upvote their own comments")
         return data
 
