@@ -68,7 +68,7 @@ class FeedEntry(PolymorphicModel):
         self.weight = score / pow(age_in_hours + 2, settings.FEED_WEIGHT['gravity'])
 
     class Meta:
-        ordering = ['weight']
+        ordering = ['-weight']
 
 class Story(FeedEntry):
     "Represents a story published by a publication"
