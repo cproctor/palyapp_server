@@ -64,7 +64,7 @@ class FeedEntry(PolymorphicModel):
     # https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d
     def update_weight(self):
         score = 1 + self.likes.count() + self.comments.count() * settings.FEED_WEIGHT['comment_weight']
-        age_in_hours = (datetime.now(timezone.utc) - self.pub_date).seconds / (60 * 60)
+        age_in_hours = (datetime.now(timezone.utc) - self.pub_date).total_seconds() / (60 * 60)
         self.weight = score / pow(age_in_hours + 2, settings.FEED_WEIGHT['gravity'])
 
     class Meta:
