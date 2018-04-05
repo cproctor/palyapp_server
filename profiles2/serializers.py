@@ -18,8 +18,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('uid', 'username', 'analytics', 'device_token', 'active', 'role', 'gender', 'race_ethnicity')
-        read_only_fields = ('auth_token', 'active')
+        fields = ('uid', 'username', 'analytics', 'device_token', 'active', 'role', 'gender', 'race_ethnicity', 'publication')
+        read_only_fields = ('uid', 'username', 'auth_token', 'active')
     
 class UsernameProfileSerializer(serializers.ModelSerializer):
     uid = serializers.SerializerMethodField()

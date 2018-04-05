@@ -21,9 +21,10 @@ class ProfileViewSet(mixins.CreateModelMixin,
     queryset = Profile.objects.filter(user__is_active=True).all()
 
     def get_serializer_class(self):
-        if self.request.method == 'GET': 
-            return UsernameProfileSerializer
-        elif self.request.method == 'POST':
-            return SignupProfileSerializer
-        else:
-            return ProfileSerializer
+        return {
+            'create': SignupProfileSerializer,
+            'retrieve': ProfileSerializer,
+            'update': ProfileSerializer,
+            'partial_update': ProfileSerializer,
+            'list': UsernameProfileSerializer
+        }[self.action]
