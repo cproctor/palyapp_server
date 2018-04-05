@@ -78,11 +78,11 @@ flagrouter.register(r'flagged_comments', views2.FlaggedViewSet)
 
 # ===================================== Global =====================================
 urlpatterns = [
-    url(r'^', include(router.urls)),
-    url(r'^', include(slashless_router.urls)),
-    url(r'^users/?$', Signup.as_view(), name="signup"),
-    url(r'^users/analytics/?$', UpdateAnalytics.as_view(), name="update_analytics"),
-    url(r'^users/devicetoken/?$', UpdateDeviceToken.as_view(), name="update_device_token"),
+    #url(r'^', include(router.urls)),
+    #url(r'^', include(slashless_router.urls)),
+    #url(r'^users/?$', Signup.as_view(), name="signup"),
+    #url(r'^users/analytics/?$', UpdateAnalytics.as_view(), name="update_analytics"),
+    #url(r'^users/devicetoken/?$', UpdateDeviceToken.as_view(), name="update_device_token"),
 
     url(r'^v2/', include(router2.urls, namespace='v2')),
     url(r'^v2/', include(slashless_router2.urls, namespace='v2_no_slash')),
