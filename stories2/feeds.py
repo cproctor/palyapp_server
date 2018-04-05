@@ -119,7 +119,8 @@ class WordpressFeed:
 
 class PalyVoiceFeedEntry(WordpressFeedEntry):
     IMAGE_CONTAINERS = [
-        {'class_': 'story-content'}
+        {'class_': 'story-content'},
+        {'class_': 'newsstand-blog-single-content'}
     ]
 
 class PalyVikingFeedEntry(WordpressFeedEntry):

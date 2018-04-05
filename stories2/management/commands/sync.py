@@ -77,12 +77,12 @@ class Command(BaseCommand):
                     story.categories.add(Category.objects.get_or_create(name=tag)[0])
                 for url in entry.image_urls():
                     if story.images.filter(source_url=url).exists():
-                        log.warn("    = Image already exists: {}".format(url))
+                        log.warn("    - Image already exists: {}".format(url))
                         continue
                     story.images.add(
                         StoryImage.from_url(url, sequence=story.images.count()), 
                         bulk=False
                     )
-                    log.info("    = Image: {}".format(url))
+                    log.info("    - Image: {}".format(url))
             pub.last_update = feed.last_update()
             pub.save()
