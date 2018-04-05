@@ -95,6 +95,7 @@ class StoryLike(models.Model):
 
 class StoryImage(models.Model):
     story = models.ForeignKey(Story, related_name='images')
+    source_url = models.URLField(null=True, blank=True)
     image = VersatileImageField('Image', 
         upload_to=s3_image_upload, blank=True,
         placeholder_image=OnStoragePlaceholderImage(
@@ -113,7 +114,7 @@ class StoryImage(models.Model):
             if not block:
                 break
             f.write(block)
-        return StoryImage(image=files.File(f), **kwargs)
+        return StoryImage(image=files.File(f), source_url=url, **kwargs)
 
 @receiver(models.signals.post_save, sender=StoryImage)
 def warm_story_images_images(sender, instance, **kwargs):
